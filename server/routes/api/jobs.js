@@ -4,20 +4,45 @@ const mongoDB = require('mongodb');
 const router = express.Router();
 
 // GET jobs
-router.get('/', async (req, res) => {
+router.get('/:userId', async (req, res) => {
   const jobs = await loadJobsCollection();
-  res.send(await jobs.find({}).toArray());
+  res.send(await jobs.find({
+    userId: req.params.userId,
+  }).toArray());
 });
 // Add jobs
 router.post('/', async (req, res) => {
   const jobs = await loadJobsCollection();
   await jobs.insertOne({
-    company: req.body.company,
-    interviews: req.body.interviews,
-    interviewTime: req.body.interviewTime,
-    archived: req.body.archived,
+    company: req.body.job.company,
+    position: req.body.job.position,
+    appliedOn: req.body.job.appliedOn,
+    interviews: req.body.job.interviews,
+    interviewTime: req.body.job.interviewTime,
+    archived: req.body.job.archived,
+    userId: req.body.job.userId,
     createdAt: new Date()
   });
+  res.status(201).send();
+})
+
+router.put('/', async (req, res) => {
+  const jobs = await loadJobsCollection();
+  console.log(req.body)
+  await jobs.updateOne(
+    {
+      _id: new mongoDB.ObjectID(req.body.job._id)
+    },
+    {
+      $set: {
+        company: req.body.job.company,
+        interviews: req.body.job.interviews,
+        interviewTime: req.body.job.interviewTime,
+        archived: req.body.job.archived,
+        userId: req.body.job.userId,
+      }
+    }
+  );
   res.status(201).send();
 })
 
